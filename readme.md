@@ -6,8 +6,7 @@ What had puzzled me for many months is that the Python designers saw a need for 
 fine with a plain 'yield' (instead of 'yield*'). Both languages support .NET-style 
 [async/await](http://msdn.microsoft.com/en-us/library/hh191443.aspx) in a very similar fashion via coroutines that
 yield Promises aka Futures. This here is a comparison of the use of generators & coroutines in both languages.
-I plan to mostly keep this around as a coroutine cheatsheet for myself, this was never proof-read, so good luck with 
-the sample code.
+I plan to mostly keep this around as a coroutine cheatsheet for myself.
 
 History
 ---
@@ -79,10 +78,10 @@ For both Python & JS calling a generator function will return a generator object
       }
     }
 
-The Python & Javascript generator variants behave very similar with respect to iterating via next(). As of node 0.11.12 there 
+The Python & Javascript generator variants behave very similar with respect to iterating via next(). As of node 0.11.12 there are
 some  differences with respect to how values are communicated back to the caller of next(): JS will return { value: 3, done: false } 
-object, whereas Python returns the value directly & communicates EOS via StopIteration exception. Practically you'll virtually
-never iterator over the generator object's values via next() in either language, so this difference is not especially important. 
+object, whereas Python returns the value directly & communicates EOS via StopIteration exception. Practically you'll hardle ever
+iterate over the generator object's values via next() in either language, so this difference is not especially important. 
 Instead you'll iterate generated values more conveniently via JS for/of (or for/in?) statement and Python's for/in statement:
 
     # Python
@@ -124,7 +123,7 @@ ingeniously by delagating some of the work to a subgenerator. See code in subgen
 
 Forget for a moment that this example is contrived & actually bloats the code for the countdown() implementation, let's
 assume there are examples where delating to a subgenerator is desirable. In any case the output of this program is not
-the naively expected [4, 3, 2, 1, 0] but [4, <generator object subgenerator at 0x00527A08>]. This is where 'yield from'
+the naively expected [4, 3, 2, 1, 0] but [4, &lt;generator object subgenerator at 0x00527A08&gt;]. This is where 'yield from'
 comes into play:
 
     def countdown_fixed(start):
@@ -135,7 +134,7 @@ comes into play:
     print(list(countdown_fixed(4)))
 
 This now prints [4, 3, 2, 1, 0], in other words 'yield from' allowed us to easily refactor our generator function's
-implementation without client code even noticing that the output from several generators had been concatenated. So
+implementation without client code even noticing that the output from several internal generators had been concatenated. So
 'yield from' flattened the chain or tree of generators into a single flat generator. Javascript supports the same
 feature but calls this operator 'yield*' instead of 'yield from':
 
@@ -200,9 +199,9 @@ exceptions in, which both languages do via generator_object.throw():
       print("generator re-threw exception: ", ex.message);
     }
 
-Just in case you were wondering what these funky coroutine could possibly be used for: some genius had the idea of
+Just in case you were wondering what these funky coroutines could possibly be used for: some genius had the idea of
 having a coroutine return Futures (aka JS promises or .NET Tasks - they are all the same thing) to the caller. The
-caller then will wait for the future to get resolved or rejected and pass the resulting value (or exception) back
+caller then will wait for the Future to get resolved or rejected and pass the resulting value (or exception) back
 into the coroutine. This results in async code that looks exactly like it's blocking equivalent, code
 that's more easily readable than callback- or promise-then-based code (e.g. see 
 [here](https://github.com/KjellSchubert/promise-future-task) for more details):
@@ -210,7 +209,7 @@ that's more easily readable than callback- or promise-then-based code (e.g. see
 async/await
 ---
 
-Now let's compare .NET style async/await in Python & Javascript, using async file I/O as an example (some HTTP
+Now let's compare .NET-style async/await in Python & Javascript, using async file I/O as an example (some HTTP
 I/O would probably be more practically relevant, but whatever). The application should use non-blocking async
 I/O to open & read a single file, solving the problem with async/await-style coroutines. To pull dependencies
 and execute the JS sample run:
@@ -237,8 +236,8 @@ The coroutine looks like this for JS (see async_await.js):
       }
     }
     
-So this code yields [Bluebird.js](https://www.npmjs.org/package/bluebird) promises, with the co feeding the values
-these promises resolve to back into the coroutine. This code looks exactly like the equivalent sync/blocking code
+So this code yields [Bluebird.js](https://www.npmjs.org/package/bluebird) promises, with co feeding the values
+these promises resolved to back into the coroutine. This code looks exactly like the equivalent sync/blocking code
 would look like, except for having been peppered with a few 'yield' expressions. Note that both 'yield' and 
 'yield*' work fine here, whereas Python's asyncio enforces the usage of 'yield from'. I'm still not sure why exactly btw.
 
@@ -272,12 +271,12 @@ using 'yield' would have worked just as well. The nodejs variant seems a bit sim
 allow a single event loop per process, whereas in Python you theoretically could run multiple event loops, which
 I imagine could cause some headaches with control flow transitions between event loops. Practically this won't
 make a difference for Python apps sticking to a single event loop. What would be nice to have is a promisifyAll()
-equivalent for Python that turns Python blocking os package API into a Future-based API, not that the boilerplate
+equivalent for Python that turns Python's blocking os package API into a Future-based API, not that the boilerplate
 code with 
 
     yield from run_async(lamda: ...)
    
-seems excessive. What would be even nicer is to have some confidence that the Python applications is not 
+seems excessive. What would be even nicer to have is some confidence that the Python application is not 
 accidentally calling a blocking API in its @asyncio.coroutine functions, since this could severely cripple
 the throughput of an HTTP server running these accidentally-blocking coroutines. Anyway: writing coroutine-based
 async I/O code is very convenient in both languanges.

@@ -19,6 +19,7 @@ def subgenerator_readFilePrefixAsUtf8(fd):
   bytes_read = yield from run_async(lambda: os.read(fd, read_chunk_size_in_bytes))
   return bytes_read.decode('utf8');
 
+@asyncio.coroutine
 def openAndReadFilePrefix(file_name):
   print("opening file");
   fd = yield from run_async(lambda: os.open(file_name, os.O_RDONLY))
