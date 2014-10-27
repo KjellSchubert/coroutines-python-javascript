@@ -1,0 +1,10 @@
+{
+  "main": "async_await.js",
+  "dependencies" : {
+    "bluebird":"*",
+    "co":"3.x"
+  },
+  "engines": {
+    "node": ">=0.11.12"
+  }
+}
